@@ -27,8 +27,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +66,7 @@ fun Body() {
 
         OutlinedTextField(
             value = name,
-            label = { Text("Name") },
+            label = { Text(stringResource(R.string.name)) },
             onValueChange = { name = it },
             modifier = Modifier.fillMaxWidth()
         )
@@ -74,6 +75,7 @@ fun Body() {
 
         var is_greeting_menu_expanded by remember { mutableStateOf(false) }
         var greeting by remember { mutableStateOf("Hello") }
+        val greetings = stringArrayResource(R.array.greetings)
 
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -83,43 +85,30 @@ fun Body() {
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { is_greeting_menu_expanded = !is_greeting_menu_expanded }
             ) {
-                Text("Select greeting")
+                Text(stringResource(R.string.select_greeting))
             }
 
             DropdownMenu(
                 expanded = is_greeting_menu_expanded,
                 onDismissRequest = { is_greeting_menu_expanded = false },
             ) {
-                DropdownMenuItem(
-                    text = { Text("Hello") },
-                    onClick = {
-                        greeting = "Hello"
-                        is_greeting_menu_expanded = false
-                    },
-                )
 
-                DropdownMenuItem(
-                    text = { Text("今日は") },
-                    onClick = {
-                        greeting = "今日は"
-                        is_greeting_menu_expanded = false
-                    },
-                )
-
-                DropdownMenuItem(
-                    text = { Text("Guten Tag") },
-                    onClick = {
-                        greeting = "Guten Tag"
-                        is_greeting_menu_expanded = false
-                    },
-                )
+                for (greeting_item in greetings) {
+                    DropdownMenuItem(
+                        text = { Text(greeting_item) },
+                        onClick = {
+                            greeting = greeting_item
+                            is_greeting_menu_expanded = false
+                        },
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
         if (name.trim().isEmpty()) {
-            Text("I don't know your name :(")
+            Text(stringResource(R.string.dont_know_name))
         } else {
             Text(greeting + ", " + name + "!")
         }

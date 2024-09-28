@@ -1,5 +1,16 @@
 <resources>
     <string name="app_name">Android Course</string>
+
     <string name="author_name">Чубий Савва Андреевич</string>
     <string name="author_group">БПИ 233</string>
+
+    <string name="select_greeting">Select greeting</string>
+    <string name="name">Name</string>
+    <string name="dont_know_name">I do not know your name</string>
+
+    <string-array name="greetings">
+        <item>Hello</item>
+        <item>今日は</item>
+        <item>Guten Tag</item>
+    </string-array>
 </resources>
