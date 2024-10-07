@@ -14,10 +14,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import androidx.navigation.NavController
 import com.kotfind.android_course.Person
+import kotlinx.serialization.Serializable
+
+@Serializable
+object PersonListRoute
+
+fun NavGraphBuilder.personListDest(people: List<Person>, onPersonSelected: (Int) -> Unit) {
+    composable<PersonListRoute> {
+        PersonListScreen(people, onPersonSelected)
+    }
+}
+
+fun NavController.toPersonList() {
+    navigate(route = PersonListRoute)
+}  
 
 @Composable
-fun PersonList(people: List<Person>, onPersonSelected: (Int) -> Unit) {
+internal fun PersonListScreen(people: List<Person>, onPersonSelected: (Int) -> Unit) {
     LazyColumn(modifier = Modifier.padding(10.dp).fillMaxSize()) {
         itemsIndexed(people) { i, person ->
             Row(

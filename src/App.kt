@@ -9,9 +9,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kotfind.android_course.PersonDetails
-import com.kotfind.android_course.PersonList
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
 import com.kotfind.android_course.Person
+import com.kotfind.android_course.PersonListRoute
 
 @Composable
 fun App() {
@@ -21,8 +22,21 @@ fun App() {
         Person("Jack"),
     ) }
 
-    PersonList(
-        people = people,
-        onPersonSelected = { }
-    )
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = PersonListRoute) {
+        personListDest(
+            people = people,
+            onPersonSelected = { person_id ->
+                navController.toPersonDetails(person_id)
+            }
+        )
+        personDetailsDest(
+            people = people,
+            onBack = { person_id, new_person ->
+                people[person_id] = new_person
+                navController.toPersonList()
+            }
+        )
+    }
 }
