@@ -1,16 +1,10 @@
 package com.kotfind.android_course
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import com.kotfind.android_course.Person
 import com.kotfind.android_course.PersonListRoute
 
