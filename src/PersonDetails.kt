@@ -42,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.ui.text.style.TextAlign
 import kotlin.text.toUByte
 
 @Serializable
@@ -80,6 +81,15 @@ internal fun PersonDetailsScreen(person: Person, onBack: (Person) -> Unit) {
         modifier = Modifier.padding(10.dp).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
+        // Title
+        Text(
+            text = "Person Details Screen",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         // Name
         OutlinedTextField(
             value = name,
