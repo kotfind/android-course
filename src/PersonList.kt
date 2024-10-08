@@ -6,14 +6,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.background
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
@@ -46,9 +51,24 @@ internal fun PersonListScreen(people: List<Person>, onPersonSelected: (Int) -> U
                     .fillMaxWidth()
                     .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
             ) {
-                Text(person.name)
+                Text(
+                    text = person.name,
+                    textAlign = TextAlign.Left,
+                    modifier = Modifier.weight(6f),
+                )
+
+                Text(
+                    text = person.age.toString(),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(2f),
+                )
+
+                Text(
+                    text = if (person.is_male) "M" else "F",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(2f),
+                )
             }
 
             if (i + 1 != people.size) {
