@@ -66,9 +66,7 @@ fun App() {
             people = people,
             onBack = { person_id, new_person ->
                 people[person_id] = new_person
-                navController.navigate(PersonListRoute) {
-                    popUpTo(PersonListRoute)
-                }
+                navController.popBackStack()
             }
         )
     }
