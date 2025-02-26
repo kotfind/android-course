@@ -46,5 +46,6 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.material3)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }
