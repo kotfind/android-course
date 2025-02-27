@@ -1,9 +1,9 @@
 package com.kotfind.android_course
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,65 +13,140 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.HttpException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
 @Composable
 fun App() {
-    Column(modifier = Modifier.fillMaxSize().padding(5.dp)) {
-        Text("Hello, world")
+    val catViewModel: CatViewModel = viewModel()
 
-        ShowCat()
+    val cat by catViewModel.cat.collectAsState()
+    val error by catViewModel.error.collectAsState()
+    val is_loading by catViewModel.is_loading.collectAsState()
+
+    var tags by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(5.dp)
+            .verticalScroll(rememberScrollState()),
+    ) {
+        TextField(
+            value = tags,
+            onValueChange = { tags = it },
+            label = { Text("Tags") },
+            placeholder = { Text("orange,cute") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Button(
+            onClick = { catViewModel.fetchCat(tags) },
+            enabled = !is_loading,
+        ) {
+            Text("Submit")
+        }
+
+        when {
+            cat != null -> {
+                ShowCat(cat!!)
+            }
+            error != null -> {
+                ErrorDialog(
+                    error = error!!,
+                    onDismiss = { catViewModel.unsetError() }
+                )
+            }
+            is_loading -> {
+                Text("Loading...")
+            }
+        }
     }
 }
 
 @Composable
-fun ShowCat() {
-    val catViewModel: CatViewModel = viewModel()
-    val cat by catViewModel.cat.collectAsState()
+fun ErrorDialog(error: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Error")
+        },
+        text = {
+            Text("Error occured: $error")
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Ok")
+            }
+        }
+    )
+}
 
-    LaunchedEffect(Unit) {
-        catViewModel.fetchCat()
-    }
-
-    if (cat != null) {
+@Composable
+fun ShowCat(cat: Cat) {
+    with (cat) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(5.dp),
         ) {
-            with (cat!!) {
-                AsyncImage(
-                    model = url,
-                    contentDescription = "Cat"
-                )
+            AsyncImage(
+                model = url,
+                contentDescription = "Cat"
+            )
 
-                Text("ID: $id")
-                Text("Tags: $tags")
-                Text("Mimetype: $mimetype")
-            }
+            Text("ID: $id")
+            Text("Tags: ${tags.joinToString(",")}")
+            Text("Mimetype: $mimetype")
         }
-    } else {
-        Text("Loading...")
     }
 }
 
 class CatViewModel : ViewModel() {
     private val _cat = MutableStateFlow<Cat?>(null)
-    val cat: StateFlow<Cat?> = _cat
+    private val _error = MutableStateFlow<String?>(null)
+    private val _is_loading = MutableStateFlow<Boolean>(false)
 
-    fun fetchCat() {
+    val cat: StateFlow<Cat?> = _cat
+    val error: StateFlow<String?> = _error
+    val is_loading: StateFlow<Boolean> = _is_loading
+
+    fun fetchCat(tags: String) {
+        _is_loading.value = true
+
+        var tagsFinal = tags.trim()
+        if (tagsFinal.isEmpty()) {
+            tagsFinal = ","
+        }
+
         viewModelScope.launch {
             try {
-                val fetchedCat = RetrofitClient.apiService.getCat()
+                val fetchedCat = RetrofitClient.apiService.getCat(tagsFinal)
                 _cat.value = fetchedCat 
+                _error.value = null
+            } catch (e: IOException) {
+                _cat.value = null
+                _error.value = "Netwrok error: ${e.message}"
+            } catch (e: HttpException) {
+                _cat.value = null
+                _error.value = "HTTP error: ${e.code()} - ${e.message}"
             } catch (e: Exception) {
-                e.printStackTrace()
+                _cat.value = null
+                _error.value = "Unknown error: ${e.message}"
+            } finally {
+                _is_loading.value = false
             }
         }
+    }
+
+    fun unsetError() {
+        _error.value = null
     }
 }
 
@@ -83,8 +158,8 @@ data class Cat(
 )
 
 interface CatService {
-    @GET("/cat?json=true")
-    suspend fun getCat(): Cat
+    @GET("/cat/{tags}?json=true")
+    suspend fun getCat(@Path("tags") tags: String): Cat
 }
 
 object RetrofitClient {
