@@ -1,11 +1,37 @@
 val packageName = env<String>("CFG_APP_PACKAGE")
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.benmanes.versions)
-    alias(libs.plugins.littlerobots.versionCatalogUpdate)
-    alias(libs.plugins.compose.compiler)
+    with (libs.plugins) {
+        alias(android.application)
+        alias(jetbrains.kotlin.android)
+        alias(benmanes.versions)
+        alias(littlerobots.versionCatalogUpdate)
+        alias(compose.compiler)
+        alias(ksp)
+    }
+}
+
+dependencies {
+    with (libs) {
+        with (androidx) {
+            implementation(platform(compose.bom))
+            implementation(core.ktx)
+            implementation(lifecycle.runtime.ktx)
+            implementation(activity.compose)
+            implementation(ui)
+            implementation(livedata)
+            implementation(ui.graphics)
+            implementation(material3)
+            implementation(room.runtime)
+            implementation(room.ktx)
+            ksp(room.compiler)
+        }
+
+        with (kotlinx) {
+            implementation(coroutines.android)
+            implementation(coroutines.core)
+        }
+    }
 }
 
 android {
@@ -57,16 +83,6 @@ android {
             versionNameSuffix = "-${flavor}"
         }
     }
-}
-
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.material3)
 }
 
 // Checks if all source files have right package name
