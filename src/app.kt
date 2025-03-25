@@ -23,14 +23,18 @@ import java.util.Date
 
 @Composable
 fun App() {
-    var fileName by remember { mutableStateOf<Uri?>(null) }
-
-    var imageReady by remember { mutableStateOf(false) }
+    var photoUri by remember { mutableStateOf<PhotoUri>(PhotoUri.None) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { isSuccess ->
-            imageReady = isSuccess
+            val photoUri_ = photoUri
+            photoUri =
+                if (photoUri_ is PhotoUri.InProgress && isSuccess) {
+                    PhotoUri.Ready(photoUri_.uri)
+                } else {
+                    PhotoUri.None
+                }
         }
     )
 
@@ -45,17 +49,18 @@ fun App() {
     ) {
         Button(
             onClick = {
-                imageReady = false
-                fileName = createImageFile(context)
-                cameraLauncher.launch(fileName!!)
+                val uri = createImageFile(context)
+                photoUri = PhotoUri.InProgress(uri)
+                cameraLauncher.launch(uri)
             }
         ) {
             Text("Take Picture")
         }
 
-        if (imageReady && fileName != null) {
+        val photoUri_ = photoUri
+        if (photoUri_ is PhotoUri.Ready) {
             AsyncImage(
-                model = fileName,
+                model = photoUri_.uri,
                 contentDescription = null,
             )
         }
@@ -75,4 +80,12 @@ fun createImageFile(context: Context): Uri {
     val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
 
     return uri!!
+}
+
+sealed class PhotoUri {
+    object None : PhotoUri()
+
+    data class InProgress(val uri: Uri) : PhotoUri()
+
+    data class Ready(val uri: Uri) : PhotoUri()
 }
