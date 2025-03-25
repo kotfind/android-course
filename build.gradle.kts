@@ -13,6 +13,15 @@ plugins {
 dependencies {
     with (libs) {
         with (androidx) {
+            with (camera) {
+                implementation(core)
+                implementation(camera2)
+                implementation(lifecycle)
+                implementation(video)
+                implementation(view)
+                implementation(extentions)
+            }
+
             implementation(platform(compose.bom))
             implementation(core.ktx)
             implementation(lifecycle.runtime.ktx)
@@ -20,7 +29,11 @@ dependencies {
             implementation(ui)
             implementation(ui.graphics)
             implementation(material3)
+            implementation(lifecycle.runtime.compose)
         }
+
+        implementation(google.accompanist.permissions)
+        implementation(kotlinx.coroutines.android)
     }
 }
 
@@ -55,7 +68,10 @@ android {
     }
 
     kotlinOptions { jvmTarget = env("CFG_VERSIONS_JVM_TARGET") }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        viewBinding = true
+    }
     composeOptions { kotlinCompilerExtensionVersion = "1.5.1" }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
 
