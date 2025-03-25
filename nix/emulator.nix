@@ -27,6 +27,9 @@
 
         "hw.keyboard" = "yes";
         "hw.mainKeys" = "yes";
+
+        "hw.audioInput" = "yes";
+        "hw.audioOutput" = "yes";
       };
     }
     // (with cfg.versions; {

@@ -20,11 +20,11 @@
       app = {
         # will be passed as a project flavor:
         #     https://developer.android.com/build/build-variants#product-flavors
-        flavor = "master";
+        flavor = "task23";
         package = "org.kotfind.android_course";
       };
 
-      system-image-type = "default";
+      system-image-type = "google_apis_playstore";
 
       versions = {
         # SDK to Android version mapping:

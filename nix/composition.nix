@@ -22,9 +22,11 @@
     cmakeVersions = [cmake];
     includeNDK = true;
     ndkVersions = [ndk];
-    useGoogleAPIs = false;
     useGoogleTVAddOns = false;
-    includeExtras = [];
+    useGoogleAPIs = true;
+    includeExtras = [
+      "extras;google;gcm"
+    ];
   });
 in {
   inherit androidComposition;
