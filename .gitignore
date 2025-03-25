@@ -5,3 +5,4 @@
 build
 gradle
 kls_database.db
+.kotlin
