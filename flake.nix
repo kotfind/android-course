@@ -20,7 +20,7 @@
       app = {
         # will be passed as a project flavor:
         #     https://developer.android.com/build/build-variants#product-flavors
-        flavor = "master";
+        flavor = "task8";
         package = "org.kotfind.android_course";
       };
 

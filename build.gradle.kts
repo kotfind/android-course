@@ -13,6 +13,11 @@ plugins {
 dependencies {
     with (libs) {
         with (androidx) {
+            with (glance) {
+                implementation(appwidget)
+                implementation(material3)
+            }
+
             implementation(platform(compose.bom))
             implementation(core.ktx)
             implementation(lifecycle.runtime.ktx)
