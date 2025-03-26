@@ -8,23 +8,24 @@ import androidx.glance.action.actionStartActivity
 import androidx.glance.layout.*
 import androidx.glance.text.*
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.glance.action.clickable
-import androidx.glance.action.actionStartActivity
+import android.content.Intent
 
 @Composable
 fun Widget() {
+    val context = LocalContext.current
+
     Row(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface),
+            .background(color = Color.White),
 
         verticalAlignment = Alignment.CenterVertically,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Image Placeholder")
+        Text("${State.tags}")
 
         Column(
             verticalAlignment = Alignment.CenterVertically,
@@ -47,7 +48,11 @@ fun Widget() {
 
             MyIconButton(
                 iconResId = R.drawable.settings,
-                onClick = { actionStartActivity<MainActivity>() }
+                onClick = {
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                }
             )
         }
     }
