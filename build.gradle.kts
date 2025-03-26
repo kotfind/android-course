@@ -7,6 +7,7 @@ plugins {
         alias(benmanes.versions)
         alias(littlerobots.versionCatalogUpdate)
         alias(compose.compiler)
+        alias(kotlin.serialization)
     }
 }
 
@@ -27,6 +28,20 @@ dependencies {
             implementation(ui)
             implementation(ui.graphics)
             implementation(material3)
+        }
+
+        with (ktor) {
+            with (client) {
+                implementation(core)
+                implementation(cio)
+                implementation(content.negotiation)
+            }
+            implementation(serialization.kotlinx.json)
+        }
+
+        with (kotlinx) {
+            implementation(serialization.json)
+            implementation(coroutines)
         }
     }
 }
