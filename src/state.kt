@@ -6,8 +6,6 @@ object State {
     var tags by mutableStateOf<String>("")
 
     var filter by mutableStateOf<Filter>(Filter.None)
-
-    var says by mutableStateOf<String>("")
 }
 
 sealed class Filter {

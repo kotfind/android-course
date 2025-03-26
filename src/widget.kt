@@ -35,28 +35,24 @@ fun Widget() {
 
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(State.tags, State.filter) {
+        val tags = State.tags
+        val filter = State.filter
+
         scope.launch {
-            cat = CatGetter.getCat()
+            cat = CatGetter.getCat(
+                tags = tags,
+                filter = filter,
+            )
         }
     }
 
     Row(
         modifier = GlanceModifier
-            .fillMaxSize()
-            .background(color = Color.White),
+            .fillMaxSize(),
 
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val cat_ = cat
-        if (cat_ != null) {
-            Image(
-                provider = ImageProvider(cat_.bitmap),
-                contentDescription = null,
-                modifier = GlanceModifier.defaultWeight(),
-            )
-        }
-
         Column(
             verticalAlignment = Alignment.CenterVertically,
             modifier = GlanceModifier.fillMaxHeight(),
@@ -84,6 +80,15 @@ fun Widget() {
                 }
             )
         }
+
+        val cat_ = cat
+        if (cat_ != null) {
+            Image(
+                provider = ImageProvider(cat_.bitmap),
+                contentDescription = null,
+                modifier = GlanceModifier.defaultWeight(),
+            )
+        }
     }
 }
 
@@ -97,7 +102,8 @@ fun MyIconButton(
         contentDescription = null,
         modifier = GlanceModifier
             .size(30.dp)
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .background(color = Color.White),
     )
 }
 
@@ -130,8 +136,14 @@ object CatGetter {
         val bitmap: Bitmap,
     )
 
-    suspend fun getCat(): Cat? {
-        val catResponse = getCatResponse()
+    suspend fun getCat(
+        tags: String,
+        filter: Filter,
+    ): Cat? {
+        val catResponse = getCatResponse(
+            tags = tags,
+            filter = filter,
+        )
         if (catResponse == null) {
             return null
         }
@@ -147,12 +159,15 @@ object CatGetter {
     }
 
     // TODO: use args
-    // tags: String,
-    // filter: Filter,
-    // says: String,
-    private suspend fun getCatResponse(): CatResponse? {
+    private suspend fun getCatResponse(
+        tags: String,
+        filter: Filter,
+    ): CatResponse? {
         try {
-            val url = "https://cataas.com/cat?json=true&type=small"
+            val url = buildUrl(
+                tags = tags,
+                filter = filter,
+            )
 
             val resp = ktorClientJson.get(url) {
                 headers {
@@ -167,6 +182,34 @@ object CatGetter {
             Log.e("CatGetter", "failed to get info", e)
             return null
         }
+    }
+
+    private fun buildUrl(
+        tags: String,
+        filter: Filter,
+    ): String {
+        // Base
+        var url = "https://cataas.com/cat"
+
+        // Tags
+        if (!tags.isEmpty()) {
+            if (url.last() != '/') {
+                url += "/";
+            }
+            url += "$tags"
+        }
+
+        // Default Opts
+        url += "?json=true&type=small"
+
+        // Filter
+        if (filter != Filter.None) {
+            url += "&filter=${filter.value}"
+        }
+
+        Log.e("buildUrl", "built url: $url")
+
+        return url
     }
 
     private suspend fun getCatBitmap(url: String): Bitmap? {

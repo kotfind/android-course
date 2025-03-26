@@ -18,10 +18,6 @@ fun App() {
         mutableStateOf<Filter>(State.filter)
     }
 
-    var says by remember {
-        mutableStateOf<String>(State.says)
-    }
-
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -32,17 +28,6 @@ fun App() {
             placeholder = { Text("orange,cute") },
             value = tags,
             onValueChange = { tags = it },
-            singleLine = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-        )
-
-        OutlinedTextField(
-            label = { Text("Says") },
-            placeholder = { Text("Nya!") },
-            value = says,
-            onValueChange = { says = it },
             singleLine = false,
             modifier = Modifier
                 .fillMaxWidth()
@@ -88,7 +73,6 @@ fun App() {
             onClick = {
                 State.tags = tags
                 State.filter = filter
-                State.says = says
             }
         ) {
             Text("Submit")
