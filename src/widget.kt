@@ -21,7 +21,11 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import io.ktor.client.request.*
 import io.ktor.client.call.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import android.graphics.*
+import io.ktor.http.*
+
+import android.util.Log
 
 @Composable
 fun Widget() {
@@ -33,7 +37,8 @@ fun Widget() {
 
     LaunchedEffect(Unit) {
         scope.launch {
-            catUrl = CatGetter.getCatUrl()
+            catUrl = CatGetter.getCat()!!.url
+            Log.e("MYWIDGET", catUrl!!)
         }
     }
 
@@ -93,7 +98,7 @@ fun MyIconButton(
 }
 
 object CatGetter {
-    private val ktorClient = HttpClient(CIO) {
+    private val ktorClientJson = HttpClient(CIO) {
         expectSuccess = true
         install(ContentNegotiation) {
             json(Json {
@@ -104,20 +109,48 @@ object CatGetter {
         }
     }
 
+    private val ktorClientRaw = HttpClient(CIO) {
+        expectSuccess = true
+        install(ContentNegotiation) {}
+    }
+
     @Serializable
     private data class CatResponse(
+        val id: String,
         val url: String,
     )
+
+    data class Cat(
+        val id: String,
+        val url: String,
+        val bitmap: Bitmap,
+    )
+
+    suspend fun getCat(): Cat? {
+        val catResponse = getCatResponse()
+        if (catResponse == null) {
+            return null
+        }
+        val bitmap = getCatBitmap(catResponse.url)
+        if (bitmap == null) {
+            return null
+        }
+        return Cat(
+            id = catResponse.id,
+            url = catResponse.url,
+            bitmap = bitmap
+        )
+    }
 
     // TODO: use args
     // tags: String,
     // filter: Filter,
     // says: String,
-    suspend fun getCatUrl(): String? {
+    private suspend fun getCatResponse(): CatResponse? {
         try {
             val url = "https://cataas.com/cat?json=true"
 
-            val resp = ktorClient.get(url) {
+            val resp = ktorClientJson.get(url) {
                 headers {
                     append("Accept", "application/json")
                 }
@@ -125,11 +158,32 @@ object CatGetter {
 
             val body: CatResponse = resp.body()
 
-            // return resp.url
-            return body.url
-
+            return body
         } catch (e: Exception) {
-            return e.toString()
+            Log.e("CatGetter", "failed to get info", e)
+            return null
+        }
+    }
+
+    private suspend fun getCatBitmap(url: String): Bitmap? {
+        try {
+            val resp = ktorClientRaw.get(url) {
+                headers {
+                    append("Accept", "image/*")
+                }
+            }
+
+            Log.e("MYLOG", resp.contentType().toString())
+
+            val byteArray: ByteArray = resp.body()
+            val bitmap = withContext(Dispatchers.IO) {
+                BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            }
+            Log.e("MYLOG", byteArray.size.toString())
+            return bitmap
+        } catch (e: Exception) {
+            Log.e("CatGetter", "failed to get bitmap", e)
+            return null
         }
     }
 }
