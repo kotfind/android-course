@@ -11,6 +11,8 @@ plugins {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
+
     with (libs) {
         with (androidx) {
             with (glance) {

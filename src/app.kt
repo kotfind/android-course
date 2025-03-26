@@ -7,10 +7,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
-    var textLocal by remember {
-        mutableStateOf(State.text)
+    var tags by remember {
+        mutableStateOf<String>(State.tags)
+    }
+
+    var filter by remember {
+        mutableStateOf<Filter>(State.filter)
+    }
+
+    var says by remember {
+        mutableStateOf<String>(State.says)
     }
 
     Column(
@@ -19,20 +28,70 @@ fun App() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedTextField(
-            value = textLocal,
-            onValueChange = { textLocal = it },
-            singleLine = true,
+            label = { Text("Tags") },
+            placeholder = { Text("orange,cute") },
+            value = tags,
+            onValueChange = { tags = it },
+            singleLine = false,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(5.dp),
         )
 
+        OutlinedTextField(
+            label = { Text("Says") },
+            placeholder = { Text("Nya!") },
+            value = says,
+            onValueChange = { says = it },
+            singleLine = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+        )
+
+        var expanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                readOnly = true,
+                value = filter.prettyName,
+                onValueChange = {},
+                label = { Text("Filter") },
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                for (filterClazz in Filter::class.sealedSubclasses) {
+                    val filterInstance = filterClazz.objectInstance!!
+                    DropdownMenuItem(
+                        text = { Text(filterInstance.prettyName) },
+                        onClick = {
+                            filter = filterInstance
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
         Button(
             onClick = {
-                State.text = textLocal
+                State.tags = tags
+                State.filter = filter
+                State.says = says
             }
         ) {
-            Text("Set Text")
+            Text("Submit")
         }
     }
 }

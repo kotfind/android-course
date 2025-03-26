@@ -20,6 +20,8 @@ fun Widget() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(State.text)
+        Text(State.tags)
+        Text(State.filter.prettyName)
+        Text(State.says)
     }
 }
