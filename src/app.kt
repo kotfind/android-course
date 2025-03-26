@@ -7,6 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.foundation.gestures.*
+
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
@@ -14,7 +16,11 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.core.content.FileProvider
 import coil3.compose.AsyncImage
 import java.io.File
@@ -23,69 +29,159 @@ import java.util.Date
 
 @Composable
 fun App() {
-    var photoUri by remember { mutableStateOf<PhotoUri>(PhotoUri.None) }
+    var photoList = remember {
+        mutableStateListOf<Photo>()
+    }
 
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture(),
-        onResult = { isSuccess ->
-            val photoUri_ = photoUri
-            photoUri =
-                if (photoUri_ is PhotoUri.InProgress && isSuccess) {
-                    PhotoUri.Ready(photoUri_.uri)
-                } else {
-                    PhotoUri.None
-                }
-        }
-    )
+    var selectedPhoto by remember {
+        mutableStateOf<Photo?>(null)
+    }
 
-    val context = LocalContext.current
-
-    Column(
-        modifier = 
-            Modifier
+    if (selectedPhoto != null) {
+        AsyncImage(
+            model = selectedPhoto!!.uri,
+            contentDescription = null,
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(5.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Button(
-            onClick = {
-                val uri = createImageFile(context)
-                photoUri = PhotoUri.InProgress(uri)
-                cameraLauncher.launch(uri)
-            }
+                .clickable {
+                    selectedPhoto = null
+                },
+        )
+    } else {
+        Box(
+            modifier = Modifier.fillMaxSize(),
         ) {
-            Text("Take Picture")
-        }
+            FileList(
+                photos = photoList,
+                onClick = { photo ->
+                    selectedPhoto = photo
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
 
-        val photoUri_ = photoUri
-        if (photoUri_ is PhotoUri.Ready) {
-            AsyncImage(
-                model = photoUri_.uri,
-                contentDescription = null,
+            PhotoButton(
+                onNewPhoto = { photo ->
+                    photoList.add(photo)
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp)
             )
         }
     }
 }
 
-fun createImageFile(context: Context): Uri {
+@Composable
+fun FileList(
+    photos: List<Photo>,
+    onClick: (Photo) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var scrollState = rememberScrollState()
+
+    Column(
+        modifier = modifier
+            .scrollable(scrollState, Orientation.Vertical),
+    ) {
+        for (photo in photos.asReversed()) {
+            Row(
+                modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth()
+                    .clickable {
+                        onClick(photo)
+                    },
+
+                verticalAlignment = Alignment.CenterVertically,
+
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                AsyncImage(
+                    model = photo.uri,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(5.dp),
+                )
+
+                Text(
+                    text = photo.name,
+                    modifier = Modifier.weight(1f, true),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PhotoButton(
+    onNewPhoto: (Photo) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var photo by remember { mutableStateOf<Photo?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { isSuccess ->
+            if (!isSuccess) {
+                return@rememberLauncherForActivityResult
+            }
+
+            if (photo != null) {
+                onNewPhoto(photo!!)
+            }
+
+            photo = null
+        }
+    )
+
+    val context = LocalContext.current
+
+    IconButton(
+        onClick = {
+            val photo_ = createPhoto(context)
+            photo = photo_
+            cameraLauncher.launch(photo_.uri)
+        },
+        modifier = modifier
+            .size(40.dp)
+            .background(MaterialTheme.colorScheme.surface)
+            .clip(CircleShape)
+            .border(
+                width = 1.5.dp,
+                color = MaterialTheme.colorScheme.primary,
+                shape = CircleShape
+            )
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.camera),
+            contentDescription = "Take a photo",
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+fun createPhoto(context: Context): Photo {
     val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(Date())
+    val name = "photo_${timestamp}"
 
     val contentValues = ContentValues().apply{
-        put(MediaStore.MediaColumns.DISPLAY_NAME, "photo_${timestamp}")
+        put(MediaStore.MediaColumns.DISPLAY_NAME, name)
         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
         put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
     }
 
     val resolver = context.contentResolver
+
     val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
 
-    return uri!!
+    return Photo(
+        uri = uri!!,
+        name = name
+    )
 }
 
-sealed class PhotoUri {
-    object None : PhotoUri()
-
-    data class InProgress(val uri: Uri) : PhotoUri()
-
-    data class Ready(val uri: Uri) : PhotoUri()
-}
+data class Photo(
+    val uri: Uri,
+    val name: String,
+)
