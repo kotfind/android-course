@@ -35,16 +35,17 @@ fun Widget() {
 
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(State.tags, State.filter) {
-        val tags = State.tags
-        val filter = State.filter
-
+    val reload: () -> Unit = {
         scope.launch {
             cat = CatGetter.getCat(
-                tags = tags,
-                filter = filter,
+                tags = State.tags,
+                filter = State.filter
             )
-        }
+        };
+    }
+
+    LaunchedEffect(State.tags, State.filter) {
+        reload()
     }
 
     Row(
@@ -60,7 +61,7 @@ fun Widget() {
             MyIconButton(
                 iconResId = R.drawable.reload,
                 onClick = {
-                    // TODO
+                    reload()
                 }
             )
 
