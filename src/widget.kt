@@ -31,14 +31,13 @@ import android.util.Log
 fun Widget() {
     val context = LocalContext.current
 
-    var catUrl by remember { mutableStateOf<String?>(null) }
+    var cat by remember { mutableStateOf<CatGetter.Cat?>(null) }
 
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         scope.launch {
-            catUrl = CatGetter.getCat()!!.url
-            Log.e("MYWIDGET", catUrl!!)
+            cat = CatGetter.getCat()
         }
     }
 
@@ -48,13 +47,18 @@ fun Widget() {
             .background(color = Color.White),
 
         verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("${catUrl}")
+        val cat_ = cat
+        if (cat_ != null) {
+            Image(
+                provider = ImageProvider(cat_.bitmap),
+                contentDescription = null,
+                modifier = GlanceModifier.defaultWeight(),
+            )
+        }
 
         Column(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = GlanceModifier.fillMaxHeight(),
         ) {
             MyIconButton(
@@ -148,7 +152,7 @@ object CatGetter {
     // says: String,
     private suspend fun getCatResponse(): CatResponse? {
         try {
-            val url = "https://cataas.com/cat?json=true"
+            val url = "https://cataas.com/cat?json=true&type=small"
 
             val resp = ktorClientJson.get(url) {
                 headers {
@@ -173,13 +177,11 @@ object CatGetter {
                 }
             }
 
-            Log.e("MYLOG", resp.contentType().toString())
-
             val byteArray: ByteArray = resp.body()
             val bitmap = withContext(Dispatchers.IO) {
                 BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             }
-            Log.e("MYLOG", byteArray.size.toString())
+
             return bitmap
         } catch (e: Exception) {
             Log.e("CatGetter", "failed to get bitmap", e)
