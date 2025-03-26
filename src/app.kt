@@ -9,11 +9,30 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun App() {
+    var textLocal by remember {
+        mutableStateOf(State.text)
+    }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(5.dp)
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Hello, world")
+        OutlinedTextField(
+            value = textLocal,
+            onValueChange = { textLocal = it },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+        )
+
+        Button(
+            onClick = {
+                State.text = textLocal
+            }
+        ) {
+            Text("Set Text")
+        }
     }
 }

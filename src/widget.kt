@@ -8,7 +8,18 @@ import androidx.glance.action.actionStartActivity
 import androidx.glance.layout.*
 import androidx.glance.text.*
 
+import androidx.compose.material3.MaterialTheme
+
 @Composable
 fun Widget() {
-    Text("Hello, world!")
+    Column(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surface),
+
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(State.text)
+    }
 }
