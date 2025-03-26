@@ -27,6 +27,12 @@ import io.ktor.http.*
 
 import android.util.Log
 
+import android.content.ContentValues
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
+
 @Composable
 fun Widget() {
     val context = LocalContext.current
@@ -68,7 +74,14 @@ fun Widget() {
             MyIconButton(
                 iconResId = R.drawable.save,
                 onClick = {
-                    // TODO
+                    val cat_ = cat
+                    if (cat_ != null) {
+                        writeBitmapToGallery(
+                            context = context,
+                            bitmap = cat_.bitmap,
+                            fileName = cat_.id
+                        )
+                    }
                 }
             )
 
@@ -231,5 +244,31 @@ object CatGetter {
             Log.e("CatGetter", "failed to get bitmap", e)
             return null
         }
+    }
+}
+
+fun writeBitmapToGallery(
+    context: Context,
+    bitmap: Bitmap,
+    fileName: String,
+) {
+    try {
+        val contentValues = ContentValues().apply{
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+        }
+
+        val resolver = context.contentResolver
+
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+        var outputStream = resolver.openOutputStream(uri!!)!!
+
+        outputStream.use {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+        }
+    } catch (e: Exception) {
+        Log.e("writeBitmapToGallery", "failed to write to gallery", e)
     }
 }
