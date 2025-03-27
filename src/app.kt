@@ -18,9 +18,11 @@ import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import android.graphics.drawable.Icon
 
 import android.util.Log
 
@@ -28,42 +30,48 @@ import android.util.Log
 fun App() {
     val context = LocalContext.current
 
-    val helper = remember {
-        NotificationHelper(
+
+    val channel = remember {
+        MyNotificationChannel(
             context = context,
             registry = (context as ComponentActivity).activityResultRegistry,
+            id = context.packageName + ".notification_channel",
+            name = "My Notification Channel",
         )
     }
 
     Button(
         onClick = {
-            helper.showNotification("Title", "Lorem Ipsum")
+            channel.MyNotification(
+                id = 0,
+                title = "0",
+                text = "With Icon",
+            ).show()
+
+            channel.MyNotification(
+                id = 1,
+                title = "1",
+                text = "No Icon",
+                iconResId = null,
+            ).show()
         },
     ) {
         Text("Show Notification")
     }
 }
 
-class NotificationHelper(
+class MyNotificationChannel(
     private val context: Context,
     private val registry: ActivityResultRegistry,
+    private val id: String,
+    private val name: String,
+    private val importance: Int = NotificationManager.IMPORTANCE_HIGH,
 ) {
-    companion object {
-        const val CHANNEL_ID = "kotfind_notifications"
-        const val NOTIFICATION_ID = 1
-        const val CHANNEL_NAME = "My Notification Channel"
-        const val CHANNEL_IMPORTANCE = NotificationManager.IMPORTANCE_HIGH
-    }
-
     init {
-        createNotificationChannel()
-    }
-
-    private fun createNotificationChannel() {
         val channel = NotificationChannel(
-            CHANNEL_ID,
-            CHANNEL_NAME,
-            CHANNEL_IMPORTANCE
+            id,
+            name,
+            importance
         )
 
         NotificationManagerCompat
@@ -77,9 +85,11 @@ class NotificationHelper(
         },
         onGranted: () -> Unit,
     ) {
+        val PERMISSION = Manifest.permission.POST_NOTIFICATIONS
+
         if (ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.POST_NOTIFICATIONS
+                PERMISSION
             ) == PackageManager.PERMISSION_GRANTED)
         {
             onGranted()
@@ -98,21 +108,36 @@ class NotificationHelper(
                 },
             )
 
-        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        permissionLauncher.launch(PERMISSION)
     }
 
-    fun showNotification(title: String, msg: String) {
-        withNotificationPermission {
-            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.profile_pic)
-                .setContentTitle(title)
-                .setContentText(msg)
-                .setAutoCancel(true)
-                .build()
+    inner class MyNotification(
+        val id: Int = 0,
+        val title: String = "My Notification",
+        val text: String = "",
+        val iconResId: Int? = R.drawable.profile_pic,
+    ) {
+        fun show() {
+            withNotificationPermission {
+                var builder = NotificationCompat.Builder(context, this@MyNotificationChannel.id)
+                    .setSmallIcon(R.drawable.profile_pic)
+                    .setContentTitle(title)
+                    .setContentText(text)
+                    .setAutoCancel(true)
+                    
+                if (iconResId != null) {
+                    builder = builder
+                        .setLargeIcon(Icon.createWithResource(context, iconResId))
+                        .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
+                }
 
-            NotificationManagerCompat
-                .from(context)
-                .notify(NOTIFICATION_ID, notification)
+                NotificationManagerCompat
+                    .from(context)
+                    .notify(
+                        this@MyNotification.id,
+                        builder.build()
+                    )
+            }
         }
     }
 }
