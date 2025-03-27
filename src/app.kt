@@ -7,36 +7,36 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
+import androidx.core.content.ContextCompat
 
 import android.util.Log
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun App() {
     val context = LocalContext.current
 
     val helper = remember {
-        NotificationHelper(context)
+        NotificationHelper(
+            context = context,
+            registry = (context as ComponentActivity).activityResultRegistry,
+        )
     }
-
-    val notificationPermissionState = rememberPermissionState(
-        android.Manifest.permission.POST_NOTIFICATIONS
-    )
 
     Button(
         onClick = {
-            if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-                notificationPermissionState.launchPermissionRequest()
-            }
-
             helper.showNotification("Title", "Lorem Ipsum")
         },
     ) {
@@ -44,7 +44,10 @@ fun App() {
     }
 }
 
-class NotificationHelper(private val context: Context) {
+class NotificationHelper(
+    private val context: Context,
+    private val registry: ActivityResultRegistry,
+) {
     companion object {
         const val CHANNEL_ID = "kotfind_notifications"
         const val NOTIFICATION_ID = 1
@@ -63,25 +66,53 @@ class NotificationHelper(private val context: Context) {
             CHANNEL_IMPORTANCE
         )
 
-        // val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) 
-        //         as NotificationManager
-        // notificationManager.createNotificationChannel(channel)
-
         NotificationManagerCompat
             .from(context)
             .createNotificationChannel(channel)
     }
 
-    fun showNotification(title: String, msg: String) {
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.profile_pic)
-            .setContentTitle(title)
-            .setContentText(msg)
-            .setAutoCancel(true)
-            .build()
+    private fun withNotificationPermission(
+        onDenied: () -> Unit = {
+            Log.e("TASK11", "notification permission denied")
+        },
+        onGranted: () -> Unit,
+    ) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED)
+        {
+            onGranted()
+        }
 
-        NotificationManagerCompat
-            .from(context)
-            .notify(NOTIFICATION_ID, notification)
+        val permissionLauncher: ActivityResultLauncher<String> =
+            registry.register(
+                key = "permission_key",
+                contract = ActivityResultContracts.RequestPermission(),
+                callback = { isGranted ->
+                    if (isGranted) {
+                        onGranted()
+                    } else {
+                        onDenied()
+                    }
+                },
+            )
+
+        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    fun showNotification(title: String, msg: String) {
+        withNotificationPermission {
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.profile_pic)
+                .setContentTitle(title)
+                .setContentText(msg)
+                .setAutoCancel(true)
+                .build()
+
+            NotificationManagerCompat
+                .from(context)
+                .notify(NOTIFICATION_ID, notification)
+        }
     }
 }

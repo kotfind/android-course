@@ -20,9 +20,8 @@ dependencies {
             implementation(ui)
             implementation(ui.graphics)
             implementation(material3)
+            implementation(appcompat)
         }
-
-        implementation(google.accompanist.permissions)
     }
 }
 
