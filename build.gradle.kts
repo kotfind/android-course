@@ -21,6 +21,8 @@ dependencies {
             implementation(ui.graphics)
             implementation(material3)
         }
+
+        implementation(google.accompanist.permissions)
     }
 }
 
