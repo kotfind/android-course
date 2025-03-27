@@ -19,24 +19,42 @@ import androidx.compose.ui.unit.DpOffset
 
 @Composable
 fun CompleteApp() {
+    var showBody by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         modifier = Modifier.safeDrawingPadding(),
-        topBar = { AppTopBar() },
+        topBar = {
+            AppTopBar(
+                onShowBodyChanged = { showBody = it },
+                showBody = showBody,
+            )
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            AppBody()
+            if (showBody) {
+                AppBody()
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTopBar() {
+fun AppTopBar(
+    onShowBodyChanged: (Boolean) -> Unit,
+    showBody: Boolean,
+) {
     var expanded by remember { mutableStateOf(false) }
+
+    var showAbout by remember {
+        mutableStateOf(false)
+    }
     
     TopAppBar(
         title = { NameCard() },
@@ -49,19 +67,56 @@ fun AppTopBar() {
                 onDismissRequest = { expanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Settings") },
-                    onClick = { /* Handle click */ expanded = false }
+                    text = {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = showBody,
+                                onCheckedChange = {},
+                            )
+
+                            Text("Show Body")
+                        }
+                    },
+                    onClick = {
+                        onShowBodyChanged(!showBody)
+                        expanded = false
+                    }
                 )
 
                 HorizontalDivider()
 
                 DropdownMenuItem(
                     text = { Text("About") },
-                    onClick = { /* Handle click */ expanded = false }
+                    onClick = {
+                        showAbout = true
+                        expanded = false
+                    }
                 )
             }
         },
     ) 
+
+    if (showAbout) {
+        AlertDialog(
+            modifier = Modifier.padding(10.dp),
+            title = { Text("About") },
+            text = { Text(
+                "This is 'Task9' application " +
+                "written by Savva Chubiy, BPI233."
+            ) },
+            onDismissRequest = { showAbout = false },
+            confirmButton = {
+                Button(
+                    onClick = { showAbout = false },
+                ) {
+                    Text("Ok")
+                }
+            },
+        )
+    }
 }
 
 @Composable
