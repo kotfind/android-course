@@ -78,10 +78,18 @@ private fun Master(albums: List<Album>) {
 
         is Screen.PictureDetails -> {
             val picture = screen_.picture
+            val album = screen_.album
 
             PictureDetailsScreen(
                 picture = picture,
                 modifier = Modifier.fillMaxSize(),
+                album = album,
+                onPictureChanged = {
+                    screen = Screen.PictureDetails(
+                        album = album,
+                        picture = it,
+                    )
+                },
             )
         }
     }
