@@ -34,30 +34,12 @@ fun App() {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(5.dp)
-    ) {
-        val albums_ = albums
-        if (albums_ != null) {
-            for (album in albums_) {
-                Text("${album.id} ${album.name}")
-                for (picture in album.pictures) {
-                    Column(
-                        modifier = Modifier
-                            .padding(5.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.background(Color.LightGray)
-                        ) {
-                            Text("${picture.id} ${picture.name} ${picture.uri}")
-                        }
-                    }
-                }
-            }
-        } else {
-            Text("Null")
-        }
+    val albums_ = albums
+    if (albums_ != null) {
+        AlbumListScreen(
+            albums = albums_,
+            modifier = Modifier.fillMaxSize(),
+            onAlbumSelected = { /* TODO */ }
+        )
     }
 }

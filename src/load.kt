@@ -6,50 +6,8 @@ import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.activity.result.ActivityResultRegistry
+import androidx.core.content.FileProvider
 import java.io.File
-
-// fun getAlbums(
-//     context: Context,
-//     registry: ActivityResultRegistry,
-// ): List<Album> {
-//     assertPermission(context, Manifest.permission.READ_MEDIA_IMAGES)
-//
-//     val fields = arrayOf(
-//         MediaStore.Images.Media.BUCKET_ID,
-//         MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-//         MediaStore.Images.Media.DATA,
-//     )
-//
-//     val sortOrder = "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} ASC"
-//
-//     val queryUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-//
-//     val cursor = context.contentResolver.query(
-//         queryUri,
-//         fields,
-//         null,
-//         null,
-//         sortOrder,
-//     )!!
-//
-//     val idCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)
-//     val nameCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
-//     val coverPathCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-//
-//     val ans = mutableListOf<Album>()
-//
-//     while (cursor.moveToNext()) {
-//         val id = cursor.getString(idCol)
-//         val name = cursor.getString(nameCol)
-//
-//         val coverPath = cursor.getString(coverPathCol)
-//         val coverUri = Uri.fromFile(File(coverPath))
-//
-//         ans.add(Album(id, name, coverUri))
-//     }
-//
-//     return ans
-// }
 
 fun getAlbums(context: Context, registry: ActivityResultRegistry): List<Album> {
     assertPermission(context, Manifest.permission.READ_MEDIA_IMAGES)
@@ -90,7 +48,11 @@ fun getAlbums(context: Context, registry: ActivityResultRegistry): List<Album> {
         val albumName = cursor.getString(albumNameCol)
 
         val imgPath = cursor.getString(imgPathCol)
-        val imgUri = Uri.fromFile(File(imgPath))
+        val imgUri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            File(imgPath),
+        )
 
         val album = mutAlbums.getOrPut(albumId) {
             MutAlbum(albumId, albumName, mutableListOf())
@@ -109,20 +71,8 @@ fun getAlbums(context: Context, registry: ActivityResultRegistry): List<Album> {
     return albums
 }
 
-data class Album(
-    val id: Long,
-    val name: String,
-    val pictures: List<Picture>,
-)
-
 private data class MutAlbum(
     var id: Long,
     var name: String,
     var pictures: MutableList<Picture>,
-)
-
-data class Picture(
-    val id: Long,
-    val name: String,
-    val uri: Uri,
 )
