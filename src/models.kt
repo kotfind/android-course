@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Size
+import android.graphics.ImageDecoder
 
 data class Picture(
     val id: Long,
@@ -12,6 +13,8 @@ data class Picture(
     val uri: Uri,
 ) {
     private var thumbBitmap: Bitmap? = null
+
+    private var bitmap: Bitmap? = null
 
     fun getThumb(context: Context): Bitmap {
         if (thumbBitmap == null) {
@@ -25,6 +28,19 @@ data class Picture(
         }
 
         return thumbBitmap!!
+    }
+
+    fun getImage(context: Context): Bitmap {
+        if (bitmap == null) {
+            val decoderSource = ImageDecoder.createSource(
+                context.contentResolver,
+                uri
+            )
+
+            bitmap = ImageDecoder.decodeBitmap(decoderSource)
+        }
+
+        return bitmap!!
     }
 
     companion object {

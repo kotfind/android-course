@@ -9,11 +9,12 @@ import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
-fun AlbumListScreen(
-    albums: List<Album>,
-    onAlbumSelected: (Album) -> Unit,
+fun AlbumScreen(
+    album: Album,
+    onPictureSelected: (Picture) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -24,36 +25,37 @@ fun AlbumListScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Albums",
+            text = "Pictures from\n'${album.name}'",
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
         )
 
-        if (albums.isEmpty()) {
+        if (album.pictures.isEmpty()) {
             Text(
-                text = "No Albums",
+                text = "No Pictures",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(top = 10.dp),
             )
         }
 
-        for (album in albums) {
+        for (picture in album.pictures) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onAlbumSelected(album) }
+                    .clickable { onPictureSelected(picture) }
                     .padding(5.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
-                    bitmap = album.getThumb(context).asImageBitmap(),
+                    bitmap = picture.getThumb(context).asImageBitmap(),
                     contentDescription = null,
                     modifier = Modifier.size(80.dp),
                 )
 
                 Text(
-                    text = album.name,
+                    text = picture.name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(start = 10.dp),

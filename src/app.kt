@@ -13,8 +13,6 @@ import androidx.compose.ui.platform.LocalContext
 
 import android.util.Log
 
-import androidx.compose.ui.graphics.Color // DELETE ME
-
 @Composable
 fun App() {
     val context = LocalContext.current
@@ -34,12 +32,46 @@ fun App() {
         }
     }
 
-    val albums_ = albums
-    if (albums_ != null) {
-        AlbumListScreen(
-            albums = albums_,
-            modifier = Modifier.fillMaxSize(),
-            onAlbumSelected = { /* TODO */ }
-        )
+    if (albums == null) {
+        Text("Loading pictures...")
+    } else {
+        Master(albums!!)
     }
+}
+
+@Composable
+fun Master(albums: List<Album>) {
+    var state by remember {
+        mutableStateOf<State>(State.AlbumList())
+    }
+
+    val state_ = state
+    when (state_) {
+        is State.AlbumList -> {
+            AlbumListScreen(
+                albums = albums,
+                modifier = Modifier.fillMaxSize(),
+                onAlbumSelected = {
+                    state = State.Album(it)
+                }
+            )
+        }
+
+        is State.Album -> {
+            val album = state_.album
+
+            AlbumScreen(
+                album = album,
+                modifier = Modifier.fillMaxSize(),
+                onPictureSelected = { /* TODO */ },
+            )
+        }
+    }
+
+}
+
+sealed class State {
+    class AlbumList : State()
+
+    class Album(val album: org.kotfind.android_course.Album) : State()
 }
