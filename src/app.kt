@@ -63,7 +63,18 @@ fun Master(albums: List<Album>) {
             AlbumDetailsScreen(
                 album = album,
                 modifier = Modifier.fillMaxSize(),
-                onPictureSelected = { /* TODO */ },
+                onPictureSelected = {
+                    screen = Screen.PictureDetails(it)
+                },
+            )
+        }
+
+        is Screen.PictureDetails -> {
+            val picture = screen_.picture
+
+            PictureDetailsScreen(
+                picture = picture,
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }
@@ -74,4 +85,6 @@ sealed class Screen {
     class AlbumList : Screen()
 
     class AlbumDetails(val album: Album) : Screen()
+
+    class PictureDetails(val picture: Picture) : Screen()
 }
