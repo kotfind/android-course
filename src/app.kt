@@ -40,7 +40,7 @@ fun App() {
 }
 
 @Composable
-fun Master(albums: List<Album>) {
+private fun Master(albums: List<Album>) {
     var screen by remember {
         mutableStateOf<Screen>(Screen.AlbumList())
     }
@@ -81,7 +81,7 @@ fun Master(albums: List<Album>) {
 
 }
 
-sealed class Screen {
+private sealed class Screen {
     class AlbumList : Screen()
 
     class AlbumDetails(val album: Album) : Screen()

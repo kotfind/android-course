@@ -15,9 +15,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Surface(modifier = Modifier.fillMaxSize()) {
-                Column(modifier = Modifier.safeDrawingPadding()) {
-                    NameCard()
+            Scaffold(
+                modifier = Modifier.safeDrawingPadding(),
+                topBar = { TopBar() }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(it)
+                        .fillMaxSize()
+                ) {
                     App()
                 }
             }
