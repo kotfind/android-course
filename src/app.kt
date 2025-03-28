@@ -41,26 +41,26 @@ fun App() {
 
 @Composable
 fun Master(albums: List<Album>) {
-    var state by remember {
-        mutableStateOf<State>(State.AlbumList())
+    var screen by remember {
+        mutableStateOf<Screen>(Screen.AlbumList())
     }
 
-    val state_ = state
-    when (state_) {
-        is State.AlbumList -> {
+    val screen_ = screen
+    when (screen_) {
+        is Screen.AlbumList -> {
             AlbumListScreen(
                 albums = albums,
                 modifier = Modifier.fillMaxSize(),
                 onAlbumSelected = {
-                    state = State.Album(it)
+                    screen = Screen.AlbumDetails(it)
                 }
             )
         }
 
-        is State.Album -> {
-            val album = state_.album
+        is Screen.AlbumDetails -> {
+            val album = screen_.album
 
-            AlbumScreen(
+            AlbumDetailsScreen(
                 album = album,
                 modifier = Modifier.fillMaxSize(),
                 onPictureSelected = { /* TODO */ },
@@ -70,8 +70,8 @@ fun Master(albums: List<Album>) {
 
 }
 
-sealed class State {
-    class AlbumList : State()
+sealed class Screen {
+    class AlbumList : Screen()
 
-    class Album(val album: org.kotfind.android_course.Album) : State()
+    class AlbumDetails(val album: Album) : Screen()
 }

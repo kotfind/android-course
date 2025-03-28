@@ -69,17 +69,3 @@ data class Picture(
         }
     }
 }
-
-data class Album(
-    val id: Long,
-    val name: String,
-    val pictures: List<Picture>,
-) {
-    fun getThumb(context: Context): Bitmap {
-        if (pictures.isEmpty()) {
-            return Picture.getEmptyThumb(context)
-        } else {
-            return pictures.first().getThumb(context)
-        }
-    }
-}

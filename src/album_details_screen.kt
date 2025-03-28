@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
-fun AlbumScreen(
+fun AlbumDetailsScreen(
     album: Album,
     onPictureSelected: (Picture) -> Unit,
     modifier: Modifier = Modifier,
