@@ -34,8 +34,12 @@ fun PictureDetailsScreen(
         ->
         zoom *= zoomChange
         rotation += rotationChange
+
+        // FIXME: correct based on rotation
         offset += offsetChange * zoom
     }
+
+    var showInfo by remember { mutableStateOf(false) }
 
     Image(
         bitmap = picture.getImage(context).asImageBitmap(),
@@ -57,7 +61,62 @@ fun PictureDetailsScreen(
                         offset = Offset.Zero
                         rotation = 0f
                     },
+                    onLongPress = { showInfo = true },
                 )
             }
     )
+
+    if (showInfo) {
+        AlertDialog(
+            modifier = Modifier.padding(10.dp),
+            title = { Text("Image Data") },
+            text = {
+                Column {
+                    Text(
+                        text = "Name:",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(picture.name)
+
+                    Text(
+                        text = "Album Name:",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(picture.albumName)
+
+                    Text(
+                        text = "Date Taken:",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(picture.dateTaken.toString())
+
+                    Text(
+                        text = "Date Added:",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(picture.dateAdded.toString())
+
+                    Text(
+                        text = "Width:",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(picture.width.toString())
+
+                    Text(
+                        text = "Height:",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(picture.height.toString())
+                }
+            },
+            onDismissRequest = { showInfo = false },
+            confirmButton = {},
+        )
+    }
 }

@@ -6,10 +6,16 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Size
 import android.graphics.ImageDecoder
+import java.util.Date
 
 data class Picture(
     val id: Long,
     val name: String,
+    val albumName: String,
+    val dateTaken: Date,
+    val dateAdded: Date,
+    val width: Int,
+    val height: Int,
     val uri: Uri,
 ) {
     private var thumbBitmap: Bitmap? = null
